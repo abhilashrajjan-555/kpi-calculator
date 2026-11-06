@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat KPI Calculator</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1d2330;
+    --muted: #6b7280;
+    --border: #d9dde3;
+    --accent: #2f6fed;
+    --warn: #b45309;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4;
+  }
+  main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 0.95rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  h2 { font-size: 1rem; margin: 0 0 14px; }
+  label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  input {
+    width: 100%;
+    font-size: 1rem;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .result:last-of-type { border-bottom: none; }
+  .result .name { font-weight: 600; }
+  .result .hint { display: block; color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+  .result .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); white-space: nowrap; margin-left: 12px; }
+  .valid { color: var(--muted); font-size: 0.9rem; margin: 0 0 6px; }
+  .msg { color: var(--warn); font-size: 0.9rem; margin: 10px 0 0; min-height: 1em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Chat KPI Calculator</h1>
+  <p class="sub">Enter your numbers. Results update as you type.</p>
+
+  <section class="card">
+    <h2>Inputs</h2>
+    <div class="field">
+      <label for="total">Total chats</label>
+      <input id="total" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
+    </div>
+    <div class="field">
+      <label for="leads">Leads</label>
+      <input id="leads" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
+    </div>
+    <div class="field">
+      <label for="ai">AI-handled chats</label>
+      <input id="ai" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
+    </div>
+    <div class="field">
+      <label for="bogus">Bogus chats</label>
+      <input id="bogus" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Results</h2>
+    <p class="valid">Valid chats: <strong id="validOut">0</strong></p>
+    <div class="result">
+      <span class="name">Conversion %<span class="hint">Leads ÷ valid chats</span></span>
+      <span class="value" id="convOut">–</span>
+    </div>
+    <div class="result">
+      <span class="name">AI share %<span class="hint">AI-handled ÷ valid chats</span></span>
+      <span class="value" id="aiOut">–</span>
+    </div>
+    <div class="result">
+      <span class="name">Bogus %<span class="hint">Bogus ÷ total chats</span></span>
+      <span class="value" id="bogusOut">–</span>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+</main>
+
+<script>
+  var ids = ["total", "leads", "ai", "bogus"];
+  var el = {};
+  ids.forEach(function (id) { el[id] = document.getElementById(id); });
+
+  function num(id) {
+    var v = parseFloat(el[id].value);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+
+  // Returns a percentage string, or a dash when the base is zero (no divide-by-zero).
+  function pct(part, whole) {
+    if (whole <= 0) return "–";
+    return (part / whole * 100).toFixed(1) + "%";
+  }
+
+  function update() {
+    var total = num("total"), leads = num("leads"), ai = num("ai"), bogus = num("bogus");
+    var valid = total - bogus;
+    var msg = "";
+
+    if (bogus > total) {
+      msg = "Bogus chats can't be more than total chats.";
+      valid = 0;
+    } else if (total > 0 && valid === 0) {
+      msg = "All chats are bogus, so there are no valid chats to measure.";
+    } else if (leads > valid && valid > 0) {
+      msg = "Leads are higher than valid chats. Check your numbers.";
+    } else if (ai > valid && valid > 0) {
+      msg = "AI-handled chats are higher than valid chats. Check your numbers.";
+    }
+
+    document.getElementById("validOut").textContent = Math.max(valid, 0);
+    document.getElementById("convOut").textContent = pct(leads, valid);
+    document.getElementById("aiOut").textContent = pct(ai, valid);
+    document.getElementById("bogusOut").textContent = bogus > total ? "–" : pct(bogus, total);
+    document.getElementById("msg").textContent = msg;
+  }
+
+  ids.forEach(function (id) { el[id].addEventListener("input", update); });
+  update();
+</script>
+</body>
+</html>
