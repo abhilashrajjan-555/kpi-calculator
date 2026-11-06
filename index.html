@@ -78,6 +78,18 @@
   .alerts[hidden] { display: none; }
   .alerts ul { margin: 0; padding-left: 18px; }
   .alerts li + li { margin-top: 4px; }
+  .copy {
+    width: 100%;
+    margin-top: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
   input.bad { border: 2px solid var(--error); background: var(--error-bg); }
 </style>
 </head>
@@ -124,6 +136,7 @@
       <span class="value" id="bogusOut">—</span>
     </div>
     <p class="msg" id="msg" role="status"></p>
+    <button type="button" class="copy" id="copyBtn">Copy results</button>
   </section>
 </main>
 
@@ -186,6 +199,32 @@
     document.getElementById("msg").textContent = msg;
   }
 
+  function copyResults() {
+    var text = "Conversion: " + document.getElementById("convOut").textContent + "\n" +
+               "AI share: " + document.getElementById("aiOut").textContent + "\n" +
+               "Bogus: " + document.getElementById("bogusOut").textContent;
+    var btn = document.getElementById("copyBtn");
+    function done() {
+      btn.textContent = "Copied";
+      setTimeout(function () { btn.textContent = "Copy results"; }, 1500);
+    }
+    function fallback() {
+      var t = document.createElement("textarea");
+      t.value = text;
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand("copy");
+      document.body.removeChild(t);
+      done();
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  document.getElementById("copyBtn").addEventListener("click", copyResults);
   ids.forEach(function (id) { el[id].addEventListener("input", update); });
   update();
 </script>
