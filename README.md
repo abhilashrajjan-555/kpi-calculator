@@ -33,7 +33,7 @@ If a number it needs to divide by is 0, the result shows a dash (–) instead of
 
 ## Input checks
 
-The page shows a warning if the numbers don't add up: when Bogus chats are more than Total chats, or when Leads or AI-handled chats are more than Valid chats. Fix the inputs and the warning goes away.
+The page shows a red warning if the numbers don't add up: when Bogus chats are more than Total chats, or when Leads or AI-handled chats are more than Valid chats. While a warning is showing, the percentages show a dash (—) instead of a number, so nobody reads a wrong result. Fix the inputs and the warning goes away.
 
 ## How to open it
 
