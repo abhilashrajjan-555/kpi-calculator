@@ -13,6 +13,8 @@
     --border: #d9dde3;
     --accent: #2f6fed;
     --warn: #b45309;
+    --error: #c62828;
+    --error-bg: #fdecea;
   }
   * { box-sizing: border-box; }
   body {
@@ -62,7 +64,23 @@
   .result .hint { display: block; color: var(--muted); font-size: 0.8rem; font-weight: 400; }
   .result .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); white-space: nowrap; margin-left: 12px; }
   .valid { color: var(--muted); font-size: 0.9rem; margin: 0 0 6px; }
-  .msg { color: var(--warn); font-size: 0.9rem; margin: 10px 0 0; min-height: 1em; }
+  .msg { color: var(--warn); font-size: 0.9rem; margin: 10px 0 0; }
+  .msg:empty { display: none; }
+  .alerts {
+    background: var(--error-bg);
+    border: 1px solid var(--error);
+    border-left-width: 5px;
+    border-radius: 8px;
+    color: var(--error);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .alerts[hidden] { display: none; }
+  .alerts ul { margin: 0; padding-left: 18px; }
+  .alerts li + li { margin-top: 4px; }
+  input.bad { border-color: var(--error); background: var(--error-bg); }
 </style>
 </head>
 <body>
@@ -89,6 +107,8 @@
       <input id="bogus" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
     </div>
   </section>
+
+  <div class="alerts" id="alerts" role="alert" hidden><ul id="alertList"></ul></div>
 
   <section class="card">
     <h2>Results</h2>
@@ -129,17 +149,36 @@
     var total = num("total"), leads = num("leads"), ai = num("ai"), bogus = num("bogus");
     var valid = total - bogus;
     var msg = "";
+    var errors = [];
+    var bad = {};
 
     if (bogus > total) {
-      msg = "Bogus chats can't be more than total chats.";
+      errors.push("Bogus chats (" + bogus + ") are more than total chats (" + total + ").");
+      bad.bogus = bad.total = true;
       valid = 0;
-    } else if (total > 0 && valid === 0) {
-      msg = "All chats are bogus, so there are no valid chats to measure.";
-    } else if (leads > valid && valid > 0) {
-      msg = "Leads are higher than valid chats. Check your numbers.";
-    } else if (ai > valid && valid > 0) {
-      msg = "AI-handled chats are higher than valid chats. Check your numbers.";
+    } else {
+      if (leads > valid) {
+        errors.push("Leads (" + leads + ") are more than valid chats (" + valid + ").");
+        bad.leads = true;
+      }
+      if (ai > valid) {
+        errors.push("AI-handled chats (" + ai + ") are more than valid chats (" + valid + ").");
+        bad.ai = true;
+      }
+      if (total > 0 && valid === 0) {
+        msg = "All chats are bogus, so there are no valid chats to measure.";
+      }
     }
+
+    var list = document.getElementById("alertList");
+    list.innerHTML = "";
+    errors.forEach(function (text) {
+      var li = document.createElement("li");
+      li.textContent = text;
+      list.appendChild(li);
+    });
+    document.getElementById("alerts").hidden = errors.length === 0;
+    ids.forEach(function (id) { el[id].classList.toggle("bad", !!bad[id]); });
 
     document.getElementById("validOut").textContent = Math.max(valid, 0);
     document.getElementById("convOut").textContent = pct(leads, valid);
