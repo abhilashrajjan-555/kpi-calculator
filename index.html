@@ -64,14 +64,12 @@
   .result .hint { display: block; color: var(--muted); font-size: 0.8rem; font-weight: 400; }
   .result .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); white-space: nowrap; margin-left: 12px; }
   .valid { color: var(--muted); font-size: 0.9rem; margin: 0 0 6px; }
-  .msg { color: var(--warn); font-size: 0.9rem; margin: 10px 0 0; }
+  .msg { color: var(--error); font-weight: 600; font-size: 0.9rem; margin: 10px 0 0; }
   .msg:empty { display: none; }
   .alerts {
-    background: var(--error-bg);
-    border: 1px solid var(--error);
-    border-left-width: 5px;
+    background: var(--error);
     border-radius: 8px;
-    color: var(--error);
+    color: #ffffff;
     padding: 10px 14px;
     margin-bottom: 16px;
     font-size: 0.95rem;
@@ -80,7 +78,7 @@
   .alerts[hidden] { display: none; }
   .alerts ul { margin: 0; padding-left: 18px; }
   .alerts li + li { margin-top: 4px; }
-  input.bad { border-color: var(--error); background: var(--error-bg); }
+  input.bad { border: 2px solid var(--error); background: var(--error-bg); }
 </style>
 </head>
 <body>
@@ -115,15 +113,15 @@
     <p class="valid">Valid chats: <strong id="validOut">0</strong></p>
     <div class="result">
       <span class="name">Conversion %<span class="hint">Leads ÷ valid chats</span></span>
-      <span class="value" id="convOut">–</span>
+      <span class="value" id="convOut">—</span>
     </div>
     <div class="result">
       <span class="name">AI share %<span class="hint">AI-handled ÷ valid chats</span></span>
-      <span class="value" id="aiOut">–</span>
+      <span class="value" id="aiOut">—</span>
     </div>
     <div class="result">
       <span class="name">Bogus %<span class="hint">Bogus ÷ total chats</span></span>
-      <span class="value" id="bogusOut">–</span>
+      <span class="value" id="bogusOut">—</span>
     </div>
     <p class="msg" id="msg" role="status"></p>
   </section>
@@ -141,7 +139,7 @@
 
   // Returns a percentage string, or a dash when the base is zero (no divide-by-zero).
   function pct(part, whole) {
-    if (whole <= 0) return "–";
+    if (whole <= 0) return "—";
     return (part / whole * 100).toFixed(1) + "%";
   }
 
@@ -181,9 +179,10 @@
     ids.forEach(function (id) { el[id].classList.toggle("bad", !!bad[id]); });
 
     document.getElementById("validOut").textContent = Math.max(valid, 0);
-    document.getElementById("convOut").textContent = pct(leads, valid);
-    document.getElementById("aiOut").textContent = pct(ai, valid);
-    document.getElementById("bogusOut").textContent = bogus > total ? "–" : pct(bogus, total);
+    var invalid = errors.length > 0;
+    document.getElementById("convOut").textContent = invalid ? "—" : pct(leads, valid);
+    document.getElementById("aiOut").textContent = invalid ? "—" : pct(ai, valid);
+    document.getElementById("bogusOut").textContent = invalid ? "—" : pct(bogus, total);
     document.getElementById("msg").textContent = msg;
   }
 
