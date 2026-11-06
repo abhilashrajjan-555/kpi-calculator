@@ -20,6 +20,15 @@ A one-page calculator for chat performance. You type in 4 numbers from your chat
 
 Conversion % and AI share % use valid chats, so junk chats don't drag them down. Bogus % uses total chats, because it measures how much of everything was junk.
 
+## Example with 600 chats
+
+Say last month you had 600 total chats, 60 bogus chats, 81 leads, and 405 AI-handled chats.
+
+- **Valid chats**: 600 minus 60 = **540**
+- **Conversion %**: 81 ÷ 540 = **15.0%**
+- **AI share %**: 405 ÷ 540 = **75.0%**
+- **Bogus %**: 60 ÷ 600 = **10.0%**
+
 If a number it needs to divide by is 0, the result shows a dash (–) instead of an error.
 
 ## Input checks
